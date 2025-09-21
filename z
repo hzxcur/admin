@@ -1,0 +1,108 @@
+
+local ADMIN_IDS = { [5078078035] = true } 
+
+
+local Players = game:GetService("Players")
+local TextChatService = game:GetService("TextChatService")
+local LocalPlayer = Players.LocalPlayer
+
+
+local PREFIX = "." -- change if you like
+local function isAdmin(userId) return ADMIN_IDS[userId] == true end
+
+local function getHumanoid(plr)
+    local char = plr.Character or plr.CharacterAdded:Wait()
+    return char and char:FindFirstChildOfClass("Humanoid")
+end
+
+local function getRoot(plr)
+    local char = plr.Character or plr.CharacterAdded:Wait()
+    return char and char:FindFirstChild("HumanoidRootPart")
+end
+
+
+local function runCommand(raw)
+    if type(raw) ~= "string" then return end
+    local text = raw:lower():gsub("^%s+", ""):gsub("%s+$", "")
+    if not text:find("^" .. PREFIX) then return end
+
+    local space = text:find("%s")
+    local cmd = space and text:sub(1, space - 1) or text
+    cmd = cmd:sub(#PREFIX + 1)
+
+    local hum = getHumanoid(LocalPlayer)
+    local root = getRoot(LocalPlayer)
+    if not hum or not root then return end
+
+    if cmd == "sit" then
+        hum.Sit = true
+
+    elseif cmd == "jump" then
+        hum.Jump = true
+        hum:ChangeState(Enum.HumanoidStateType.Jumping)
+
+    elseif cmd == "reset" then
+        hum.Health = 0
+
+    elseif cmd == "freeze" then
+        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Anchored = true
+            end
+        end
+
+    elseif cmd == "unfreeze" then
+        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Anchored = false
+            end
+        end
+
+    elseif cmd == "fling" then
+        root.Velocity = Vector3.new(0, 200, 0) + (root.CFrame.LookVector * 200)
+
+    elseif cmd == "bring" then
+        local admin = nil
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if isAdmin(plr.UserId) then
+                admin = plr
+                break
+            end
+        end
+        if admin then
+            local adminRoot = getRoot(admin)
+            if adminRoot then
+                root.CFrame = adminRoot.CFrame + Vector3.new(0, 3, 0) -- spawn slightly above
+            end
+        end
+    end
+end
+
+
+local function hookTextChatService()
+    if TextChatService and TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+        TextChatService.MessageReceived:Connect(function(message)
+            local src = message.TextSource
+            if src and isAdmin(src.UserId) then
+                runCommand(message.Text)
+            end
+        end)
+        return true
+    end
+    return false
+end
+
+local function hookLegacyChat()
+    if Players.PlayerChatted then
+        Players.PlayerChatted:Connect(function(player, message)
+            if isAdmin(player.UserId) then
+                runCommand(message)
+            end
+        end)
+        return true
+    end
+    return false
+end
+
+hookTextChatService()
+hookLegacyChat()
