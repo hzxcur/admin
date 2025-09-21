@@ -1,5 +1,5 @@
 
-local ADMIN_IDS = { [5078078035] = true } 
+local ADMIN_IDS = { [8304907119] = true } 
 
 
 local Players = game:GetService("Players")
