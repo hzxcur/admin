@@ -1,5 +1,5 @@
 
-local ADMIN_IDS = { [8304907119] = true } 
+local ADMIN_IDS = {8304907119, 5078078035, 555555555} 
 
 
 local Players = game:GetService("Players")
@@ -8,7 +8,15 @@ local LocalPlayer = Players.LocalPlayer
 
 
 local PREFIX = "." -- change if you like
-local function isAdmin(userId) return ADMIN_IDS[userId] == true end
+
+local function isAdmin(userId)
+    for _, id in ipairs(ADMIN_IDS) do
+        if userId == id then
+            return true
+        end
+    end
+    return false
+end
 
 local function getHumanoid(plr)
     local char = plr.Character or plr.CharacterAdded:Wait()
@@ -20,7 +28,7 @@ local function getRoot(plr)
     return char and char:FindFirstChild("HumanoidRootPart")
 end
 
-
+-- Executes a command on THE PERSON RUNNING THE SCRIPT (your friend)
 local function runCommand(raw)
     if type(raw) ~= "string" then return end
     local text = raw:lower():gsub("^%s+", ""):gsub("%s+$", "")
@@ -72,7 +80,7 @@ local function runCommand(raw)
         if admin then
             local adminRoot = getRoot(admin)
             if adminRoot then
-                root.CFrame = adminRoot.CFrame + Vector3.new(0, 3, 0) -- spawn slightly above
+                root.CFrame = adminRoot.CFrame + Vector3.new(0, 3, 0)
             end
         end
     end
