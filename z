@@ -1,19 +1,17 @@
 
-local ADMIN_IDS = {8304907119, 5078078035, 555555555} 
+local ADMIN_IDS = {8304907119, 5078078035}
 
-
+-- // === SERVICES ===
 local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 local LocalPlayer = Players.LocalPlayer
 
-
-local PREFIX = "." -- change if you like
+-- // === UTILITIES ===
+local PREFIX = "."
 
 local function isAdmin(userId)
     for _, id in ipairs(ADMIN_IDS) do
-        if userId == id then
-            return true
-        end
+        if userId == id then return true end
     end
     return false
 end
@@ -28,10 +26,13 @@ local function getRoot(plr)
     return char and char:FindFirstChild("HumanoidRootPart")
 end
 
--- Executes a command on THE PERSON RUNNING THE SCRIPT (your friend)
-local function runCommand(raw)
-    if type(raw) ~= "string" then return end
-    local text = raw:lower():gsub("^%s+", ""):gsub("%s+$", "")
+-- Runs a command on THE PERSON RUNNING THIS SCRIPT (LocalPlayer),
+-- but only if the sender is an admin AND not the LocalPlayer.
+local function runCommandFrom(senderUserId, rawText)
+    if type(rawText) ~= "string" or not isAdmin(senderUserId) then return end
+    if senderUserId == LocalPlayer.UserId then return end -- <<< ignore own messages
+
+    local text = rawText:lower():gsub("^%s+", ""):gsub("%s+$", "")
     if not text:find("^" .. PREFIX) then return end
 
     local space = text:find("%s")
@@ -53,46 +54,47 @@ local function runCommand(raw)
         hum.Health = 0
 
     elseif cmd == "freeze" then
-        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.Anchored = true
+        local char = LocalPlayer.Character
+        if char then
+            for _, part in ipairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.Anchored = true
+                end
             end
         end
 
     elseif cmd == "unfreeze" then
-        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.Anchored = false
+        local char = LocalPlayer.Character
+        if char then
+            for _, part in ipairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.Anchored = false
+                end
             end
         end
 
     elseif cmd == "fling" then
-        root.Velocity = Vector3.new(0, 200, 0) + (root.CFrame.LookVector * 200)
+        -- Strong shove upward & forward
+        local push = Vector3.new(0, 200, 0) + (root.CFrame.LookVector * 200)
+        pcall(function() root.AssemblyLinearVelocity = push end)
+        root.Velocity = push
 
     elseif cmd == "bring" then
-        local admin = nil
-        for _, plr in ipairs(Players:GetPlayers()) do
-            if isAdmin(plr.UserId) then
-                admin = plr
-                break
-            end
-        end
-        if admin then
-            local adminRoot = getRoot(admin)
-            if adminRoot then
-                root.CFrame = adminRoot.CFrame + Vector3.new(0, 3, 0)
-            end
+        local admin = Players:GetPlayerByUserId(senderUserId)
+        local adminRoot = admin and getRoot(admin)
+        if adminRoot then
+            root.CFrame = adminRoot.CFrame + Vector3.new(0, 3, 0)
         end
     end
 end
 
-
+-- // === CHAT LISTENERS (supports BOTH systems) ===
 local function hookTextChatService()
     if TextChatService and TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
         TextChatService.MessageReceived:Connect(function(message)
             local src = message.TextSource
-            if src and isAdmin(src.UserId) then
-                runCommand(message.Text)
+            if src then
+                runCommandFrom(src.UserId, message.Text)
             end
         end)
         return true
@@ -103,9 +105,7 @@ end
 local function hookLegacyChat()
     if Players.PlayerChatted then
         Players.PlayerChatted:Connect(function(player, message)
-            if isAdmin(player.UserId) then
-                runCommand(message)
-            end
+            runCommandFrom(player.UserId, message)
         end)
         return true
     end
