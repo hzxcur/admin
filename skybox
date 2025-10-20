@@ -1,0 +1,29 @@
+-- Custom Skybox Script
+local Lighting = game:GetService("Lighting")
+
+-- Remove old skyboxes
+for _, v in pairs(Lighting:GetChildren()) do
+	if v:IsA("Sky") then
+		v:Destroy()
+	end
+end
+
+-- Create new sky
+local sky = Instance.new("Sky")
+sky.Name = "CustomSky"
+
+-- Set all sides of the skybox
+sky.SkyboxBk = "rbxassetid://16823270864"
+sky.SkyboxDn = "rbxassetid://16823272150"
+sky.SkyboxFt = "rbxassetid://16823273508"
+sky.SkyboxLf = "rbxassetid://16823274898"
+sky.SkyboxRt = "rbxassetid://16823276281"
+sky.SkyboxUp = "rbxassetid://16823277547"
+
+-- Optional extras
+sky.MoonTextureId = "rbxasset://sky/moon.jpg"
+sky.StarCount = 3000
+sky.SkyboxOrientation = Vector3.new(0, 0, 0)
+
+-- Apply to lighting
+sky.Parent = Lighting
