@@ -19,3 +19,120 @@ mesh.Scale = Vector3.new(1, 1, 1)
 mesh.MeshType = Enum.MeshType.FileMesh
 
 part.Parent = workspace
+
+
+
+-- Spawn Houseb model
+local model = Instance.new("Model")
+model.Name = "Houseb"
+model.Parent = workspace
+
+-- Part 1 with mesh
+local part1 = Instance.new("Part")
+part1.Size = Vector3.new(33, 1, 28)
+part1.CFrame = CFrame.new(-164.145370, -535.200012, 146.960602)
+part1.Anchored = true
+part1.CanCollide = true
+part1.Material = Enum.Material.Plastic
+part1.Color = Color3.fromRGB(163, 162, 165)
+part1.Transparency = 0
+part1.Reflectance = 0
+
+local mesh1 = Instance.new("SpecialMesh", part1)
+mesh1.MeshId = "rbxassetid://6786234745"
+mesh1.TextureId = "rbxassetid://6786234917"
+mesh1.Scale = Vector3.new(1, 1, 1)
+mesh1.MeshType = Enum.MeshType.FileMesh
+
+part1.Parent = model
+
+-- Part 2
+local part2 = Instance.new("Part")
+part2.Size = Vector3.new(41, 1, 37)
+part2.CFrame = CFrame.new(-163.929993, -550.100037, 146.801743)
+part2.Anchored = true
+part2.CanCollide = true
+part2.Material = Enum.Material.Plastic
+part2.Color = Color3.fromRGB(163, 162, 165)
+part2.Transparency = 1 -- fully transparent
+part2.Reflectance = 0
+part2.Parent = model
+
+-- Part 3
+local part3 = Instance.new("Part")
+part3.Size = Vector3.new(1, 16.2, 37)
+part3.CFrame = CFrame.new(-144.049820, -541.850098, 146.833496)
+part3.Anchored = true
+part3.CanCollide = true
+part3.Material = Enum.Material.Plastic
+part3.Color = Color3.fromRGB(163, 162, 165)
+part3.Transparency = 1
+part3.Reflectance = 0
+part3.Parent = model
+
+-- Part 4
+local part4 = Instance.new("Part")
+part4.Size = Vector3.new(41, 0.2, 38)
+part4.CFrame = CFrame.new(-164.049820, -534.350098, 147.633499)
+part4.Anchored = true
+part4.CanCollide = true
+part4.Material = Enum.Material.Plastic
+part4.Color = Color3.fromRGB(163, 162, 165)
+part4.Transparency = 1
+part4.Reflectance = 0
+part4.Parent = model
+
+-- Part 5
+local part5 = Instance.new("Part")
+part5.Size = Vector3.new(42, 16.2, 1)
+part5.CFrame = CFrame.new(-164.549820, -541.850098, 128.833496)
+part5.Anchored = true
+part5.CanCollide = true
+part5.Material = Enum.Material.Plastic
+part5.Color = Color3.fromRGB(163, 162, 165)
+part5.Transparency = 1
+part5.Reflectance = 0
+part5.Parent = model
+
+-- Part 6
+local part6 = Instance.new("Part")
+part6.Size = Vector3.new(1, 16.2, 40)
+part6.CFrame = CFrame.new(-184.049820, -541.850098, 147.333496)
+part6.Anchored = true
+part6.CanCollide = true
+part6.Material = Enum.Material.Plastic
+part6.Color = Color3.fromRGB(163, 162, 165)
+part6.Transparency = 1
+part6.Reflectance = 0
+part6.Parent = model
+
+-- Part 7
+local part7 = Instance.new("Part")
+part7.Size = Vector3.new(42, 16.2, 2)
+part7.CFrame = CFrame.new(-163.549820, -541.850098, 166.333496)
+part7.Anchored = true
+part7.CanCollide = true
+part7.Material = Enum.Material.Plastic
+part7.Color = Color3.fromRGB(163, 162, 165)
+part7.Transparency = 1
+part7.Reflectance = 0
+part7.Parent = model
+
+-- Part 8 with mesh
+local part8 = Instance.new("Part")
+part8.Size = Vector3.new(4, 1.2, 3)
+part8.CFrame = CFrame.new(-163.482010, -549.550110, 147.303146)
+part8.Anchored = true
+part8.CanCollide = false
+part8.Material = Enum.Material.Plastic
+part8.Color = Color3.fromRGB(163, 162, 165)
+part8.Transparency = 0
+part8.Reflectance = 0
+
+local mesh8 = Instance.new("SpecialMesh", part8)
+mesh8.MeshId = "rbxassetid://13846055645"
+mesh8.TextureId = "rbxassetid://13846055859"
+mesh8.Scale = Vector3.new(4, 4, 4)
+mesh8.MeshType = Enum.MeshType.FileMesh
+
+part8.Parent = model
