@@ -1,0 +1,21 @@
+-- Auto-generated part spawn script (game-locked)
+if game.PlaceId ~= 292628125 then
+    warn("This script only works in the intended game (ID: 292628125).")
+    return
+end
+
+local part = Instance.new("Part")
+part.Size = Vector3.new(4, 1, 2)
+part.CFrame = CFrame.new(-212.249054, 78.064209, 488.266388, 1, 0, 0, 0, 1, 0, 0, 0, 1)
+part.Anchored = true
+part.CanCollide = true
+part.Material = Enum.Material.Plastic
+part.Color = Color3.fromRGB(163, 162, 165)
+
+local mesh = Instance.new("SpecialMesh", part)
+mesh.MeshId = "rbxassetid://10421515045"
+mesh.TextureId = "rbxassetid://10421515215"
+mesh.Scale = Vector3.new(1, 1, 1)
+mesh.MeshType = Enum.MeshType.FileMesh
+
+part.Parent = workspace
