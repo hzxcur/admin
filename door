@@ -72,32 +72,3 @@ end
 onTouchDoor(part1, part2, false) -- Door1 → behind Door2
 onTouchDoor(part2, part1, true)  -- Door2 → forward Door1
 
-
-local originalHeight = workspace.FallenPartsDestroyHeight
-workspace.FallenPartsDestroyHeight = -9e9
-
-local function preventVoidDeath(character)
-    coroutine.wrap(function()
-        repeat task.wait() until character:FindFirstChildOfClass("Humanoid")
-        local hum = character:FindFirstChildOfClass("Humanoid")
-        hum.HealthChanged:Connect(function()
-            if character:GetPivot().Position.Y < originalHeight then
-                hum.Health = hum.MaxHealth
-            end
-        end)
-    end)()
-end
-
-if player.Character then
-    preventVoidDeath(player.Character)
-end
-
-local charAdded = player.CharacterAdded:Connect(preventVoidDeath)
-
--- Cleanup Function
-getgenv().deletescript123456lol69 = function()
-    workspace.FallenPartsDestroyHeight = originalHeight
-    charAdded:Disconnect()
-    if gui then gui:Destroy() end
-end
-
