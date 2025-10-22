@@ -134,3 +134,5 @@ mesh8.MeshId = "rbxassetid://13846055645"
 mesh8.TextureId = "rbxassetid://13846055859"
 mesh8.Scale = Vector3.new(4, 4, 4)
 mesh8.MeshType = Enum.MeshType.FileMesh
+
+part8.Parent = model
