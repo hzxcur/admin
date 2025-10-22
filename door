@@ -1,0 +1,103 @@
+local model = Instance.new('Model')
+model.Name = 'zzz'
+model.Parent = workspace
+
+-- Table to store cooldowns per player
+local cooldowns = {}
+
+-- Part 1 (Door 1 - behind teleport)
+local part1 = Instance.new('Part')
+part1.Size = Vector3.new(4, 8, 1.4)
+part1.CFrame = CFrame.new(-163.48201, -546.450134, 165.603149)
+part1.Anchored = true
+part1.CanCollide = true
+part1.Material = Enum.Material.Plastic
+part1.Color = Color3.fromRGB(163, 162, 165)
+part1.Transparency = 0
+part1.Reflectance = 0
+local mesh1 = Instance.new('SpecialMesh', part1)
+mesh1.MeshId = 'http://www.roblox.com/asset/?id=481276479'
+mesh1.TextureId = 'http://www.roblox.com/asset/?id=481276492'
+mesh1.Scale = Vector3.new(1, 1, 1)
+mesh1.MeshType = Enum.MeshType.FileMesh
+part1.Parent = model
+
+-- Part 2 (Door 2 - forward teleport)
+local part2 = Instance.new('Part')
+part2.Size = Vector3.new(4, 8, 1.4)
+part2.CFrame = CFrame.new(-313.154266, 3.50421, 201.519958)
+part2.Anchored = true
+part2.CanCollide = true
+part2.Material = Enum.Material.Plastic
+part2.Color = Color3.fromRGB(163, 162, 165)
+part2.Transparency = 0
+part2.Reflectance = 0
+local mesh2 = Instance.new('SpecialMesh', part2)
+mesh2.MeshId = 'http://www.roblox.com/asset/?id=481276479'
+mesh2.TextureId = 'http://www.roblox.com/asset/?id=481276492'
+mesh2.Scale = Vector3.new(1, 1, 1)
+mesh2.MeshType = Enum.MeshType.FileMesh
+part2.Parent = model
+
+-- Teleport function
+local function onTouchDoor(door, targetDoor, forward)
+    door.Touched:Connect(function(hit)
+        local character = hit.Parent
+        if character and character:FindFirstChild("Humanoid") then
+            local player = game.Players:GetPlayerFromCharacter(character)
+            if not player then return end
+
+            if cooldowns[player] then return end
+            cooldowns[player] = true
+
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local offset = Vector3.new(0, 3, 0) -- always slightly above
+                if forward then
+                    offset = offset + targetDoor.CFrame.LookVector * 3 -- in front
+                else
+                    offset = offset - targetDoor.CFrame.LookVector * 3 -- behind
+                end
+                hrp.CFrame = targetDoor.CFrame + offset
+            end
+
+            delay(0.5, function()
+                cooldowns[player] = nil
+            end)
+        end
+    end)
+end
+
+-- Connect doors
+onTouchDoor(part1, part2, false) -- Door1 → behind Door2
+onTouchDoor(part2, part1, true)  -- Door2 → forward Door1
+
+
+local originalHeight = workspace.FallenPartsDestroyHeight
+workspace.FallenPartsDestroyHeight = -9e9
+
+local function preventVoidDeath(character)
+    coroutine.wrap(function()
+        repeat task.wait() until character:FindFirstChildOfClass("Humanoid")
+        local hum = character:FindFirstChildOfClass("Humanoid")
+        hum.HealthChanged:Connect(function()
+            if character:GetPivot().Position.Y < originalHeight then
+                hum.Health = hum.MaxHealth
+            end
+        end)
+    end)()
+end
+
+if player.Character then
+    preventVoidDeath(player.Character)
+end
+
+local charAdded = player.CharacterAdded:Connect(preventVoidDeath)
+
+-- Cleanup Function
+getgenv().deletescript123456lol69 = function()
+    workspace.FallenPartsDestroyHeight = originalHeight
+    charAdded:Disconnect()
+    if gui then gui:Destroy() end
+end
+
