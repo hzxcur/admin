@@ -1,4 +1,4 @@
-local ADMIN_IDS = {9222295748, 9029942203 , 9485030895, 10026770984}  -- put admin UserIds here (numbers only)
+local ADMIN_IDS = {9222295748, 9029942203 , 5078078035, 10026770984}  -- put admin UserIds here (numbers only)
 local PREFIX = "."
 
 -- ================ SERVICES =================
