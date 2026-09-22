@@ -285,4 +285,3 @@ pcall(function()
     end)
 end)
 
-print("Bot admin script loaded!")
