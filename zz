@@ -1,138 +1,288 @@
-local ADMIN_IDS = {9222295748, 9029942203 , 5078078035, 10026770984}  -- put admin UserIds here (numbers only)
+local ADMIN_IDS = {8313356374, 9029942203 , 9222165740, 10026770984}  
+
 local PREFIX = "."
 
--- ================ SERVICES =================
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TextChatService = game:GetService("TextChatService")
+
 local LocalPlayer = Players.LocalPlayer
 
--- ============== ADMIN LOOKUP ================
 local ADMIN_SET = {}
+
 for _, id in ipairs(ADMIN_IDS) do
     ADMIN_SET[tonumber(id)] = true
 end
 
-local function isAdminUserId(uid)
-    return uid and ADMIN_SET[uid] == true
-end
-
--- disable entirely on admin clients
-if isAdminUserId(LocalPlayer.UserId) then
+if ADMIN_SET[LocalPlayer.UserId] then
     return
 end
 
--- ================ HELPERS ===================
-local function getHum(plr)
-    local char = plr.Character or plr.CharacterAdded:Wait()
+local function isAdmin(uid)
+    return uid and ADMIN_SET[uid] == true
+end
+
+local function getHum()
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     return char and char:FindFirstChildOfClass("Humanoid")
 end
-local function getRoot(plr)
-    local char = plr.Character or plr.CharacterAdded:Wait()
+
+local function getRoot()
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     return char and char:FindFirstChild("HumanoidRootPart")
 end
 
 local function parseCmd(text)
-    if type(text) ~= "string" then return nil end
+    if type(text) ~= "string" then
+        return nil, nil
+    end
+
     local t = text:lower():match("^%s*(.-)%s*$")
-    if not t or t == "" then return nil end
-    if not t:sub(1, #PREFIX) == PREFIX then return nil end
-    return string.split(t:sub(#PREFIX + 1), " ")[1]
+
+    if not t or t == "" then
+        return nil, nil
+    end
+
+    if t:sub(1, #PREFIX) ~= PREFIX then
+        return nil, nil
+    end
+
+    local parts = string.split(t:sub(#PREFIX + 1), " ")
+
+    return parts[1], parts[2]
 end
 
-local function exec(cmd, senderUid)
-    local hum = getHum(LocalPlayer)
-    local root = getRoot(LocalPlayer)
-    if not hum or not root then return end
+-- Find player by partial username OR display name
+local function findPlayer(name)
+    if not name or name == "" then
+        return nil
+    end
+
+    name = name:lower()
+
+    -- Exact username/display name first
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.Name:lower() == name
+            or player.DisplayName:lower() == name then
+            return player
+        end
+    end
+
+    -- Then partial username/display name
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.Name:lower():sub(1, #name) == name
+            or player.DisplayName:lower():sub(1, #name) == name then
+            return player
+        end
+    end
+
+    return nil
+end
+
+local function exec(cmd, arg)
+    local hum = getHum()
+    local root = getRoot()
+
+    if not hum or not root then
+        return
+    end
 
     if cmd == "sit" then
         hum.Sit = true
+
     elseif cmd == "jump" then
         hum.Jump = true
         hum:ChangeState(Enum.HumanoidStateType.Jumping)
+
     elseif cmd == "reset" then
         hum.Health = 0
+
     elseif cmd == "freeze" then
         local char = LocalPlayer.Character
+
         if char then
             for _, part in ipairs(char:GetDescendants()) do
-                if part:IsA("BasePart") then part.Anchored = true end
+                if part:IsA("BasePart") then
+                    part.Anchored = true
+                end
             end
         end
+
     elseif cmd == "unfreeze" then
         local char = LocalPlayer.Character
+
         if char then
             for _, part in ipairs(char:GetDescendants()) do
-                if part:IsA("BasePart") then part.Anchored = false end
+                if part:IsA("BasePart") then
+                    part.Anchored = false
+                end
             end
         end
+
     elseif cmd == "fling" then
-        local push = Vector3.new(0, 200, 0) + (root.CFrame.LookVector * 200)
-        pcall(function() root.AssemblyLinearVelocity = push end)
+        local push =
+            Vector3.new(0, 200, 0)
+            + (root.CFrame.LookVector * 200)
+
+        pcall(function()
+            root.AssemblyLinearVelocity = push
+        end)
+
         root.Velocity = push
+
     elseif cmd == "bring" then
-        local adminPlr = senderUid and Players:GetPlayerByUserId(senderUid)
-        local aRoot = adminPlr and getRoot(adminPlr)
-        if aRoot then
-            root.CFrame = aRoot.CFrame + Vector3.new(0, 3, 0)
+        local adminPlr = nil
+
+        for _, p in ipairs(Players:GetPlayers()) do
+            if ADMIN_SET[p.UserId] then
+                adminPlr = p
+                break
+            end
+        end
+
+        local adminChar = adminPlr and adminPlr.Character
+
+        local adminRoot =
+            adminChar and adminChar:FindFirstChild("HumanoidRootPart")
+
+        if adminRoot then
+            root.CFrame = adminRoot.CFrame + Vector3.new(0, 3, 0)
+        end
+
+    elseif cmd == "tp" then
+        if arg then
+            local target = findPlayer(arg)
+
+            if target then
+                local tRoot =
+                    target.Character
+                    and target.Character:FindFirstChild("HumanoidRootPart")
+
+                if tRoot then
+                    root.CFrame =
+                        tRoot.CFrame + Vector3.new(0, 3, 0)
+                end
+            end
+        end
+
+    elseif cmd == "speed" then
+        local spd = tonumber(arg)
+
+        if spd then
+            hum.WalkSpeed = spd
+        end
+
+    elseif cmd == "jump_power" then
+        local jp = tonumber(arg)
+
+        if jp then
+            hum.JumpPower = jp
         end
     end
 end
 
--- =============== CHAT HOOKS =================
+-- =========================================
+-- 1. LEGACY CHAT
+-- =========================================
+
 pcall(function()
-    if TextChatService and TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-        if TextChatService.MessageReceived then
-            TextChatService.MessageReceived:Connect(function(m)
-                local src = m.TextSource
-                if src and isAdminUserId(src.UserId) then
-                    local cmd = parseCmd(m.Text)
-                    if cmd then exec(cmd, src.UserId) end
+    local chatEvents =
+        ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+
+    if chatEvents then
+        local filtered =
+            chatEvents:FindFirstChild("OnMessageDoneFiltering")
+
+        if filtered then
+            filtered.OnClientEvent:Connect(function(data)
+                if data and isAdmin(data.SpeakerUserId) then
+                    local cmd, arg = parseCmd(data.Message)
+
+                    if cmd then
+                        exec(cmd, arg)
+                    end
                 end
             end)
         end
-        local channelsFolder = TextChatService:FindFirstChild("TextChannels")
-        if channelsFolder then
-            local function hookChannel(ch)
-                if ch.OnIncomingMessage then
-                    ch.OnIncomingMessage:Connect(function(m)
-                        local src = m.TextSource
-                        if src and isAdminUserId(src.UserId) then
-                            local cmd = parseCmd(m.Text)
-                            if cmd then exec(cmd, src.UserId) end
-                        end
-                    end)
+    end
+end)
+
+-- =========================================
+-- 2. TEXT CHAT SERVICE
+-- =========================================
+
+pcall(function()
+    if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+
+        TextChatService.MessageReceived:Connect(function(message)
+            local source = message.TextSource
+
+            if source and isAdmin(source.UserId) then
+                local cmd, arg = parseCmd(message.Text)
+
+                if cmd then
+                    exec(cmd, arg)
                 end
             end
-            for _, ch in ipairs(channelsFolder:GetChildren()) do hookChannel(ch) end
+        end)
+
+        local function hookChannel(channel)
+            pcall(function()
+                channel.MessageReceived:Connect(function(message)
+                    local source = message.TextSource
+
+                    if source and isAdmin(source.UserId) then
+                        local cmd, arg = parseCmd(message.Text)
+
+                        if cmd then
+                            exec(cmd, arg)
+                        end
+                    end
+                end)
+            end)
+        end
+
+        local channelsFolder =
+            TextChatService:FindFirstChild("TextChannels")
+
+        if channelsFolder then
+            for _, channel in ipairs(channelsFolder:GetChildren()) do
+                hookChannel(channel)
+            end
+
             channelsFolder.ChildAdded:Connect(hookChannel)
         end
     end
 end)
 
+-- =========================================
+-- 3. PLAYER.CHATTED
+-- =========================================
+
 pcall(function()
-    local chatEvents = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
-    if chatEvents then
-        local filtered = chatEvents:FindFirstChild("OnMessageDoneFiltering")
-        if filtered and filtered:IsA("RemoteEvent") then
-            filtered.OnClientEvent:Connect(function(data)
-                local uid = data and data.SpeakerUserId
-                if uid and isAdminUserId(uid) then
-                    local cmd = parseCmd(data.Message)
-                    if cmd then exec(cmd, uid) end
+    for _, player in ipairs(Players:GetPlayers()) do
+        if isAdmin(player.UserId) then
+            player.Chatted:Connect(function(message)
+                local cmd, arg = parseCmd(message)
+
+                if cmd then
+                    exec(cmd, arg)
                 end
             end)
         end
     end
+
+    Players.PlayerAdded:Connect(function(player)
+        if isAdmin(player.UserId) then
+            player.Chatted:Connect(function(message)
+                local cmd, arg = parseCmd(message)
+
+                if cmd then
+                    exec(cmd, arg)
+                end
+            end)
+        end
+    end)
 end)
 
-pcall(function()
-    if Players.PlayerChatted then
-        Players.PlayerChatted:Connect(function(plr, message)
-            if plr and isAdminUserId(plr.UserId) then
-                local cmd = parseCmd(message)
-                if cmd then exec(cmd, plr.UserId) end
-            end
-        end)
-    end
-end)
+print("Bot admin script loaded!")
